@@ -1,0 +1,12 @@
+numpy>=1.13
+pyyaml==3.12
+matplotlib
+opencv-python==3.4.2.16
+setuptools
+Cython
+mock
+scipy
+networkx
+ipython
+tensorboardX
+Pillow

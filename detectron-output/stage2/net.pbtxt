@@ -1,0 +1,430 @@
+name: "fusion"
+op {
+  input: "gpu_0/data_stage2"
+  input: "gpu_0/conv1_stage2_w"
+  output: "gpu_0/conv1_stage2"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+}
+op {
+  input: "gpu_0/conv1_stage2"
+  input: "gpu_0/conv1_bn_stage2_s"
+  input: "gpu_0/conv1_bn_stage2_b"
+  output: "gpu_0/conv1_stage2"
+  name: ""
+  type: "AffineChannel"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv1_stage2"
+  output: "gpu_0/conv1_stage2"
+  name: ""
+  type: "Relu"
+  arg {
+    name: "cudnn_exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+}
+op {
+  input: "gpu_0/conv1_stage2"
+  input: "gpu_0/conv2_stage2_w"
+  input: "gpu_0/conv2_stage2_b"
+  output: "gpu_0/conv2_stage2"
+  name: ""
+  type: "Conv"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+}
+op {
+  input: "gpu_0/conv2_stage2"
+  output: "gpu_0/seg_score_NHWC_stage2"
+  name: ""
+  type: "NCHW2NHWC"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/seg_score_NHWC_stage2"
+  output: "gpu_0/seg_score_reshape_stage2"
+  output: "gpu_0/seg_score_old_shape_stage2"
+  name: ""
+  type: "Reshape"
+  arg {
+    name: "shape"
+    ints: -1
+    ints: 20
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/gt_label_stage2"
+  output: "gpu_0/gt_label_reshape_stage2"
+  output: "gpu_0/gt_label_shape_stage2"
+  name: ""
+  type: "Reshape"
+  arg {
+    name: "shape"
+    ints: -1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/seg_score_reshape_stage2"
+  input: "gpu_0/gt_label_reshape_stage2"
+  output: "gpu_0/probs_human_stage2"
+  output: "gpu_0/loss_human_stage2"
+  name: ""
+  type: "SoftmaxWithLoss"
+  arg {
+    name: "scale"
+    f: 1.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/loss_human_stage2"
+  output: "gpu_0/loss_human_stage2_grad"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "value"
+    f: 1.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/seg_score_reshape_stage2"
+  input: "gpu_0/gt_label_reshape_stage2"
+  input: "gpu_0/probs_human_stage2"
+  input: "gpu_0/loss_human_stage2_grad"
+  output: "gpu_0/seg_score_reshape_stage2_grad"
+  name: ""
+  type: "SoftmaxWithLossGradient"
+  arg {
+    name: "scale"
+    f: 1.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/seg_score_reshape_stage2_grad"
+  input: "gpu_0/seg_score_old_shape_stage2"
+  output: "gpu_0/seg_score_NHWC_stage2_grad"
+  output: "_gpu_0/seg_score_NHWC_stage2_grad_dims"
+  name: ""
+  type: "Reshape"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/seg_score_NHWC_stage2_grad"
+  output: "gpu_0/conv2_stage2_grad"
+  name: ""
+  type: "NHWC2NCHW"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/conv1_stage2"
+  input: "gpu_0/conv2_stage2_w"
+  input: "gpu_0/conv2_stage2_grad"
+  output: "gpu_0/conv2_stage2_w_grad"
+  output: "gpu_0/conv2_stage2_b_grad"
+  output: "gpu_0/conv1_stage2_grad"
+  name: ""
+  type: "ConvGradient"
+  arg {
+    name: "kernel"
+    i: 1
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "pad"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/conv1_stage2"
+  input: "gpu_0/conv1_stage2_grad"
+  output: "gpu_0/conv1_stage2_grad"
+  name: ""
+  type: "ReluGradient"
+  arg {
+    name: "cudnn_exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/conv1_stage2_grad"
+  input: "gpu_0/conv1_bn_stage2_s"
+  output: "gpu_0/conv1_stage2_grad"
+  name: ""
+  type: "AffineChannelGradient"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/data_stage2"
+  input: "gpu_0/conv1_stage2_w"
+  input: "gpu_0/conv1_stage2_grad"
+  output: "gpu_0/conv1_stage2_w_grad"
+  output: "gpu_0/data_stage2_grad"
+  name: ""
+  type: "ConvGradient"
+  arg {
+    name: "no_bias"
+    i: 1
+  }
+  arg {
+    name: "kernel"
+    i: 3
+  }
+  arg {
+    name: "exhaustive_search"
+    i: 0
+  }
+  arg {
+    name: "pad"
+    i: 1
+  }
+  arg {
+    name: "order"
+    s: "NCHW"
+  }
+  arg {
+    name: "stride"
+    i: 1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+  engine: "CUDNN"
+  is_gradient_op: true
+}
+op {
+  input: "gpu_0/conv1_stage2_w_grad"
+  input: "gpu_0/one"
+  input: "gpu_0/conv1_stage2_w"
+  input: "gpu_0/wd"
+  output: "gpu_0/conv1_stage2_w_grad"
+  name: ""
+  type: "WeightedSum"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv1_stage2_w_grad"
+  input: "gpu_0/conv1_stage2_w_momentum"
+  input: "gpu_0/lr"
+  input: "gpu_0/conv1_stage2_w"
+  output: "gpu_0/conv1_stage2_w_grad"
+  output: "gpu_0/conv1_stage2_w_momentum"
+  output: "gpu_0/conv1_stage2_w"
+  name: ""
+  type: "MomentumSGDUpdate"
+  arg {
+    name: "momentum"
+    f: 0.899999976158
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_w_grad"
+  input: "gpu_0/one"
+  input: "gpu_0/conv2_stage2_w"
+  input: "gpu_0/wd"
+  output: "gpu_0/conv2_stage2_w_grad"
+  name: ""
+  type: "WeightedSum"
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_w_grad"
+  input: "gpu_0/conv2_stage2_w_momentum"
+  input: "gpu_0/lr"
+  input: "gpu_0/conv2_stage2_w"
+  output: "gpu_0/conv2_stage2_w_grad"
+  output: "gpu_0/conv2_stage2_w_momentum"
+  output: "gpu_0/conv2_stage2_w"
+  name: ""
+  type: "MomentumSGDUpdate"
+  arg {
+    name: "momentum"
+    f: 0.899999976158
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_b_grad"
+  output: "gpu_0/conv2_stage2_b_grad"
+  name: ""
+  type: "Scale"
+  arg {
+    name: "scale"
+    f: 2.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_b_grad"
+  input: "gpu_0/conv2_stage2_b_momentum"
+  input: "gpu_0/lr"
+  input: "gpu_0/conv2_stage2_b"
+  output: "gpu_0/conv2_stage2_b_grad"
+  output: "gpu_0/conv2_stage2_b_momentum"
+  output: "gpu_0/conv2_stage2_b"
+  name: ""
+  type: "MomentumSGDUpdate"
+  arg {
+    name: "momentum"
+    f: 0.899999976158
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+type: "dag"
+num_workers: 4
+external_input: "gpu_0/data_stage2"
+external_input: "gpu_0/conv1_stage2_w"
+external_input: "gpu_0/conv1_bn_stage2_s"
+external_input: "gpu_0/conv1_bn_stage2_b"
+external_input: "gpu_0/conv2_stage2_w"
+external_input: "gpu_0/conv2_stage2_b"
+external_input: "gpu_0/gt_label_stage2"
+external_input: "gpu_0/one"
+external_input: "gpu_0/wd"
+external_input: "gpu_0/conv1_stage2_w_momentum"
+external_input: "gpu_0/lr"
+external_input: "gpu_0/conv2_stage2_w_momentum"
+external_input: "gpu_0/conv2_stage2_b_momentum"

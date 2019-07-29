@@ -1,0 +1,198 @@
+name: "fusion_init"
+op {
+  output: "gpu_0/conv1_stage2_w"
+  name: ""
+  type: "MSRAFill"
+  arg {
+    name: "std"
+    f: 0.0010000000475
+  }
+  arg {
+    name: "shape"
+    ints: 20
+    ints: 40
+    ints: 3
+    ints: 3
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/conv1_bn_stage2_s"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 20
+  }
+  arg {
+    name: "value"
+    f: 1.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/conv1_bn_stage2_b"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 20
+  }
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/conv2_stage2_w"
+  name: ""
+  type: "MSRAFill"
+  arg {
+    name: "std"
+    f: 0.0010000000475
+  }
+  arg {
+    name: "shape"
+    ints: 20
+    ints: 20
+    ints: 1
+    ints: 1
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/conv2_stage2_b"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 20
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/lr"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 1
+  }
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/one"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 1
+  }
+  arg {
+    name: "value"
+    f: 1.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/wd"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 1
+  }
+  arg {
+    name: "value"
+    f: 9.99999974738e-05
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  output: "gpu_0/wd_gn"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "shape"
+    ints: 1
+  }
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv1_stage2_w"
+  output: "gpu_0/conv1_stage2_w_momentum"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_w"
+  output: "gpu_0/conv2_stage2_w_momentum"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
+op {
+  input: "gpu_0/conv2_stage2_b"
+  output: "gpu_0/conv2_stage2_b_momentum"
+  name: ""
+  type: "ConstantFill"
+  arg {
+    name: "value"
+    f: 0.0
+  }
+  device_option {
+    device_type: 1
+    cuda_gpu_id: 0
+  }
+}
